@@ -1,0 +1,67 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+cab_x, cab_y, cab_z = 540, 0, 0
+cab_w, cab_d, cab_h = 1000, 276, 700
+
+planks = [
+    [0,   440, 110, 1362, 10,  390, "green", "back plank"],
+    [0,   18,  0,   18,   422, 500, "green", "left plank"],
+    [1352,18,  0,   18,   434, 500, "red",   "right plank"],
+    [18,  18,  110, 1334, 422, 18,  "green", "bottom plank"],
+    [18,  18,  482, 1334, 422, 18,  "green", "top plank"],
+    [0,   18,  0,   1380, 18,  110, "red",   "skirting"],
+    [0,   0,   500, 1370, 450, 18,  "red",   "top board"],
+]
+
+def draw_box(ax, x, y, z, w, d, h, color, alpha):
+    x1, y1, z1 = x+w, y+d, z+h
+    faces = [
+        [[x,y,z],[x1,y,z],[x1,y1,z],[x,y1,z]],   
+        [[x,y,z1],[x1,y,z1],[x1,y1,z1],[x,y1,z1]], 
+        [[x,y,z],[x1,y,z],[x1,y,z1],[x,y,z1]],    
+        [[x,y1,z],[x1,y1,z],[x1,y1,z1],[x,y1,z1]], 
+        [[x,y,z],[x,y1,z],[x,y1,z1],[x,y,z1]],    
+        [[x1,y,z],[x1,y1,z],[x1,y1,z1],[x1,y,z1]], 
+    ]
+    box = Poly3DCollection(faces, facecolor=color, edgecolor="black", alpha=alpha, linewidth=0.4)
+    ax.add_collection3d(box)
+
+fig = plt.figure(figsize=(10, 7))
+ax = fig.add_subplot(111, projection="3d")
+ax.set_title("Cabinet 3D View", fontsize=12)
+
+draw_box(ax, 540, 0, 0, 540, 276, 2884, "lightblue", 0.08)
+
+draw_box(ax, cab_x, cab_y, cab_z, cab_w, cab_d, cab_h, "yellow", 0.10)
+ax.text(cab_x + cab_w/2, cab_y, cab_z + cab_h + 30,
+        f"Cabinet  W={cab_w}  D={cab_d}  H={cab_h} mm",
+        fontsize=7, color="orange", ha="center")
+
+for p in planks:
+    x, y, z, w, d, h, color, name = p
+    draw_box(ax, cab_x+x, cab_y+y, cab_z+z, w, d, h, color, 0.65)
+    ax.text(cab_x+x + w/2, cab_y+y + d/2, cab_z+z + h + 8,
+            f"{name}\n{w}x{d}x{h}mm", fontsize=4.5, ha="center", color="black")
+
+r = 40
+u = np.linspace(0, 2*np.pi, 20)
+v = np.linspace(0, np.pi, 20)
+bx = cab_x + cab_w/2 + r * np.outer(np.cos(u), np.sin(v))
+by = cab_y + cab_d/2 + r * np.outer(np.sin(u), np.sin(v))
+bz = cab_z + r + 20  + r * np.outer(np.ones(20), np.cos(v))
+ax.plot_surface(bx, by, bz, color="orange")
+
+ax.set_xlabel("Width (X)")
+ax.set_ylabel("Depth (Y)")
+ax.set_zlabel("Height (Z)")
+
+ax.view_init(elev=20, azim=-50)
+
+ax.set_xlim(400, 1700)
+ax.set_ylim(-100, 500)
+ax.set_zlim(0, 900)
+
+plt.tight_layout()
+plt.show()
